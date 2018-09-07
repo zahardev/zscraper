@@ -1,7 +1,4 @@
-// Set the start URL
 var startUrl = 'http://wptest.loc/test/test.html';
-
-// Create instances
 var casper = require('casper').create(/*{verbose: true, logLevel: 'debug'}*/);
 var utils = require('utils');
 
@@ -12,40 +9,55 @@ var crawler = {
     visitedUrls: []
 };
 
-crawler.crawl = function (url) {
-    this.openPage(url);
-    casper.then(function () {
-        var links = this.evaluate(crawler.getLinks),
-            baseUrl = crawler.baseUri();
-
-        crawler.getPendingUrls(baseUrl, links);
-
-        // If there are URLs to be processed
-        if (crawler.pendingUrls.length > 0) {
-            casper.echo('Found urls for scrapping:');
-            utils.dump(crawler.pendingUrls);
-            var nextUrl = crawler.pendingUrls.shift();
-            crawler.scrapPage(nextUrl);
-        }
+crawler.crawl = function (startUrl) {
+    this.fetchPendingUrls(startUrl);
+    casper.then(function(){
+        crawler.logUrls();
+        crawler.crawlPendingUrls();
     });
 
-    casper.then(function () {
+    this.crawlPendingUrls();
+
+    casper.then(function () { 
         utils.dump(data);
     });
 };
 
+crawler.crawlPendingUrls = function(){
+    if (crawler.pendingUrls.length > 0) {
+        var url = crawler.pendingUrls.shift();
+        crawler.scrapPage(url);
+        casper.then(crawler.crawlPendingUrls);
+    }
+};
+
+crawler.logUrls = function(){
+    console.log('Found urls for scrapping:');
+    utils.dump(crawler.pendingUrls);
+};
+
+crawler.fetchPendingUrls = function(startUrl){
+    this.openPage(startUrl);
+    casper.then(function () {
+        var links = this.evaluate(crawler.getLinks),
+            baseUrl = crawler.baseUri();
+
+        crawler.pendingUrls = crawler.getAbsoluteUrls(baseUrl, links);
+    });
+};
+
 crawler.openPage = function(url){
-    casper.open(url);
-    crawler.visitedUrls.push(url);
-    this.showStatus();
+    casper.thenOpen(url);
+    casper.then(function(){
+        crawler.visitedUrls.push(url);
+        crawler.showStatus();
+    });
 };
 
-crawler.fetchLinks = function(url){
-
-};
 
 crawler.scrapPage = function (url) {
-    casper.open(url);
+    crawler.openPage(url);
+
     casper.then(function(){
         this.click('#hidden-link');
     });
@@ -68,15 +80,15 @@ crawler.scrapPage = function (url) {
     });
 };
 
-crawler.getPendingUrls = function (baseUrl, links) {
-    var pendingUrls = [];
+crawler.getAbsoluteUrls = function (baseUrl, links) {
+    var absoluteUrls = [];
     var self = this;
     Array.prototype.forEach.call(links, function (link) {
         var newUrl = self.absoluteUri(baseUrl, link);
-        pendingUrls.push(newUrl);
+        absoluteUrls.push(newUrl);
     });
 
-    crawler.pendingUrls = pendingUrls;
+    return absoluteUrls;
 };
 
 crawler.getLinks = function () {
