@@ -1,3 +1,10 @@
+ZScraper is CasperJS boilerplate, which gives opportunity to go by links, click on them and get hidden data,
+which appears only after clicking.
+
+
+
+It requires CasperJS and PhantomJS libraries.
+
 Install PhantomJS
 
 Before installing PhantomJS, you will need to install some required packages on your system. You can install all of them with the following command:
@@ -16,5 +23,5 @@ Next, create a symlink of PhantomJS binary file to systems bin dirctory:
 
 sudo ln -s /usr/local/share/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/local/bin/
 
-Install Casterjs
+Install CasperJS
 sudo npm install -g casperjs

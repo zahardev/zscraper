@@ -26,7 +26,7 @@ crawler.crawl = function (startUrl) {
 crawler.crawlPendingUrls = function(){
     if (crawler.pendingUrls.length > 0) {
         var url = crawler.pendingUrls.shift();
-        crawler.scrapPage(url);
+        crawler.FetchPageData(url);
         casper.then(crawler.crawlPendingUrls);
     }
 };
@@ -55,7 +55,7 @@ crawler.openPage = function(url){
 };
 
 
-crawler.scrapPage = function (url) {
+crawler.FetchPageData = function (url) {
     crawler.openPage(url);
 
     casper.then(function(){
@@ -112,28 +112,12 @@ crawler.absoluteUri = function (baseUri, link) {
 };
 
 crawler.showStatus = function () {
-    // Set the status style based on server status code
     var status = casper.status().currentHTTPStatus;
-    switch (status) {
-        case 200:
-            var statusStyle = {fg: 'green', bold: true};
-            break;
-        case 404:
-            var statusStyle = {fg: 'red', bold: true};
-            break;
-        default:
-            var statusStyle = {fg: 'magenta', bold: true};
-            break;
-    }
-
-    // Display the crawlered URL and status
-    casper.echo(casper.colorizer.format(status, statusStyle) + ' ' + casper.getCurrentUrl());
+    console.log(status + ' ' + casper.getCurrentUrl());
 };
 
-// Start crawlering
 casper.start(startUrl, function () {
     crawler.crawl(startUrl);
 });
 
-// Start the run
 casper.run();
