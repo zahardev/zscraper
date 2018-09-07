@@ -7,32 +7,37 @@ var utils = require('utils');
 
 var data = [];
 
-var crawler = {};
+var crawler = {
+    pendingUrls: [],
+    visitedUrls: []
+};
 
-// crawler from the given URL
 crawler.crawl = function (url) {
-    var self = this;
-    // Open the URL
-    casper.open(url);
+    this.openPage(url);
     casper.then(function () {
-        self.showStatus();
+        var links = this.evaluate(crawler.getLinks),
+            baseUrl = crawler.baseUri();
 
-        var links = this.evaluate(self.getLinks),
-            baseUrl = crawler.baseUri(),
-            pendingUrls = crawler.getPendingUrls(baseUrl, links),
-            visitedUrls = [];
+        crawler.getPendingUrls(baseUrl, links);
 
         // If there are URLs to be processed
-        if (pendingUrls.length > 0) {
-            var nextUrl = pendingUrls.shift();
+        if (crawler.pendingUrls.length > 0) {
+            casper.echo('Found urls for scrapping:');
+            utils.dump(crawler.pendingUrls);
+            var nextUrl = crawler.pendingUrls.shift();
             crawler.scrapPage(nextUrl);
-            visitedUrls.push(url);
         }
     });
 
     casper.then(function () {
         utils.dump(data);
     });
+};
+
+crawler.openPage = function(url){
+    casper.open(url);
+    crawler.visitedUrls.push(url);
+    this.showStatus();
 };
 
 crawler.fetchLinks = function(url){
@@ -45,7 +50,6 @@ crawler.scrapPage = function (url) {
         this.click('#hidden-link');
     });
     casper.then(function () {
-        crawler.showStatus();
         var pageData = {};
 
         pageData.content = this.evaluate(function () {
@@ -72,10 +76,7 @@ crawler.getPendingUrls = function (baseUrl, links) {
         pendingUrls.push(newUrl);
     });
 
-    casper.echo('Found urls for scrapping:');
-    utils.dump(pendingUrls);
-
-    return pendingUrls;
+    crawler.pendingUrls = pendingUrls;
 };
 
 crawler.getLinks = function () {
