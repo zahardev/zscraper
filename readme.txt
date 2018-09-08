@@ -1,6 +1,9 @@
-ZScraper is CasperJS boilerplate, which gives opportunity to go by links, click on them and get hidden data,
-which appears only after clicking.
-
+ZScraper is the CasperJS boilerplate, which gives opportunity to fetch data from different resources.
+It goes to the main url which you specified, gets links by selector you specified and crawls by them,
+fetching all data you need.
+You can check how it works by sending it to the public/test directory:
+it will go to the index.html, then find 1.html and 2.html links and fetch data from them.
+Feel free to fork it and create amazing scraper :)
 
 
 It requires CasperJS and PhantomJS libraries.
