@@ -1,12 +1,19 @@
-var startUrl = 'http://wptest.loc/test/test.html';
+var startUrl = 'http://scraper.loc/test/';
 var casper = require('casper').create(/*{verbose: true, logLevel: 'debug'}*/);
 var utils = require('utils');
 
-var data = [];
-
 var crawler = {
+    selectors: {
+        links: '#links a',
+        page: {
+            content: '#content',
+            title: 'h1',
+            hiddenData: '#hidden-data'
+        }
+    },
     pendingUrls: [],
-    visitedUrls: []
+    visitedUrls: [],
+    data: []
 };
 
 crawler.crawl = function (startUrl) {
@@ -19,7 +26,7 @@ crawler.crawl = function (startUrl) {
     this.crawlPendingUrls();
 
     casper.then(function () { 
-        utils.dump(data);
+        utils.dump(crawler.data);
     });
 };
 
@@ -59,25 +66,21 @@ crawler.FetchPageData = function (url) {
     crawler.openPage(url);
 
     casper.then(function(){
-        this.click('#hidden-link');
+        this.click(crawler.selectors.page.hiddenData);
     });
     casper.then(function () {
         var pageData = {};
 
-        pageData.content = this.evaluate(function () {
-            return document.querySelector("#content").innerText;
+        Array.prototype.forEach.call(Object.keys(crawler.selectors.page), function(el){
+            pageData[el] = casper.evaluate(crawler.getInnerText, crawler.selectors.page[el]);
         });
 
-        pageData.title = this.evaluate(function () {
-            return document.querySelector('h1').innerText;
-        });
-
-        pageData.hiddenData = this.evaluate(function () {
-            return document.querySelector('#hidden-link').innerText;
-        });
-
-        data.push(pageData);
+        crawler.data.push(pageData);
     });
+};
+
+crawler.getInnerText = function(context){
+    return document.querySelector(context).innerText;
 };
 
 crawler.getAbsoluteUrls = function (baseUrl, links) {
