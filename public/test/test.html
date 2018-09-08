@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<script>
+    myFunction = function() {
+        var closure = 'closure scope';
+
+        // value is optional
+        return function(value) {
+            return closure;
+            // if it will be omitted
+            if(arguments.length == 0) {
+                // the method is a getter
+                return closure;
+            } else {
+                // otherwise a setter
+                closure = value;
+                // with fluid interface ;)
+                return this;
+            }
+        }
+    };
+    A = myFunction(); // myFunction returns a function, not a value
+    //A(123); // set value
+    B = A(); // A is a function, which when run, returns:
+    console.log(A()); // '123'
+</script>
+
+
+</body>
+</html>
